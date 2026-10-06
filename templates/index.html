@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bengaluru House Price Predictor | ML Powered Real Estate Valuation</title>
+    <meta name="description" content="Predict house prices in Bengaluru using modern Ridge Regression Machine Learning model. Select location, square feet, bedrooms, and bathrooms for instant valuation.">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(14, 165, 233, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glow-button {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .glow-button:hover {
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .result-animate {
+            animation: slideUpFade 0.4s ease-out forwards;
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="font-sans text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="w-full border-b border-slate-800/80 backdrop-blur-md bg-slate-900/50 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+                        Namma HomePrice ML
+                    </h1>
+                    <p class="text-xs text-slate-400">Bengaluru Real Estate AI Predictor</p>
+                </div>
+            </div>
+            <div class="hidden sm:flex items-center space-x-2">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+                    Ridge Regression Pipeline Active
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 py-8 sm:py-12 w-full flex-grow">
+        
+        <!-- Hero Title -->
+        <div class="text-center mb-8 sm:mb-10">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3">
+                Estimate Bengaluru <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-500 via-purple-400 to-pink-400">Property Prices</span>
+            </h2>
+            <p class="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
+                Powered by Scikit-Learn Machine Learning trained on thousands of Bangalore house listings across 250+ locations.
+            </p>
+        </div>
+
+        <!-- Quick Sample Presets -->
+        <div class="mb-6 flex flex-wrap items-center justify-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-2">Popular Presets:</span>
+            <button type="button" onclick="applyPreset('1st Block Jayanagar', 1800, 3, 3)" class="text-xs bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                Jayanagar (1800 sqft, 3 BHK)
+            </button>
+            <button type="button" onclick="applyPreset('Whitefield', 1250, 2, 2)" class="text-xs bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                Whitefield (1250 sqft, 2 BHK)
+            </button>
+            <button type="button" onclick="applyPreset('Indiranagar', 2400, 4, 4)" class="text-xs bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                Indiranagar (2400 sqft, 4 BHK)
+            </button>
+            <button type="button" onclick="applyPreset('Electronic City Phase II', 1000, 2, 2)" class="text-xs bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                Electronic City (1000 sqft, 2 BHK)
+            </button>
+        </div>
+
+        <!-- Prediction Form Card -->
+        <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <form id="priceForm" onsubmit="handlePredict(event)" class="space-y-6">
+                
+                <!-- Location Field with Search Filter -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="location" class="block text-sm font-semibold text-slate-200">
+                            Location / Locality <span class="text-brand-500">*</span>
+                        </label>
+                        <span class="text-xs text-slate-400">Total 250+ valid areas</span>
+                    </div>
+
+                    <!-- Live Filter Search Box for Dropdown -->
+                    <div class="relative mb-2">
+                        <input type="text" id="locationSearch" oninput="filterLocations()" placeholder="🔍 Quick search location (e.g. Whitefield, Koramangala)..." 
+                               class="w-full bg-slate-950/60 border border-slate-700 text-slate-200 text-xs sm:text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-brand-500 transition placeholder-slate-500">
+                    </div>
+
+                    <select id="location" name="location" required 
+                            class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition appearance-none cursor-pointer">
+                        <option value="" disabled selected>-- Select a Location in Bengaluru --</option>
+                        {% for loc in locations %}
+                            <option value="{{ loc }}">{{ loc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Numerical Inputs Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    
+                    <!-- Total Sqft -->
+                    <div>
+                        <label for="total_sqft" class="block text-sm font-semibold text-slate-200 mb-2">
+                            Total Sq Feet <span class="text-brand-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" id="total_sqft" name="total_sqft" min="1" step="any" required placeholder="e.g. 1200"
+                                   class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition placeholder-slate-500">
+                            <span class="absolute right-3 top-3 text-xs font-medium text-slate-500">sq ft</span>
+                        </div>
+                    </div>
+
+                    <!-- BHK -->
+                    <div>
+                        <label for="bhk" class="block text-sm font-semibold text-slate-200 mb-2">
+                            Bedrooms (BHK) <span class="text-brand-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" id="bhk" name="bhk" min="1" max="16" step="1" required placeholder="e.g. 2"
+                                   class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition placeholder-slate-500">
+                            <span class="absolute right-3 top-3 text-xs font-medium text-slate-500">BHK</span>
+                        </div>
+                    </div>
+
+                    <!-- Bathrooms -->
+                    <div>
+                        <label for="bath" class="block text-sm font-semibold text-slate-200 mb-2">
+                            Bathrooms <span class="text-brand-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" id="bath" name="bath" min="1" max="16" step="1" required placeholder="e.g. 2"
+                                   class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition placeholder-slate-500">
+                            <span class="absolute right-3 top-3 text-xs font-medium text-slate-500">baths</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Validation Error Alert Container -->
+                <div id="errorAlert" class="hidden p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center space-x-3">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="errorMessage"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 text-white font-bold text-base shadow-lg shadow-indigo-600/30 glow-button flex items-center justify-center space-x-2">
+                    <span id="btnText">Predict Property Price</span>
+                    <svg id="btnSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Results Output Section -->
+            <div id="resultCard" class="hidden mt-8 pt-6 border-t border-slate-700/80 result-animate">
+                <div class="rounded-xl bg-gradient-to-br from-slate-900/90 to-slate-950 p-6 border border-brand-500/30 text-center relative overflow-hidden shadow-inner">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-brand-500/10 rounded-full blur-2xl"></div>
+                    
+                    <p class="text-xs uppercase font-semibold tracking-wider text-slate-400 mb-1">
+                        Estimated Market Price
+                    </p>
+
+                    <div class="flex items-center justify-center space-x-2 my-2">
+                        <span class="text-2xl font-bold text-brand-400">₹</span>
+                        <span id="predictedPrice" class="text-4xl sm:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-brand-300">
+                            0.00
+                        </span>
+                        <span class="text-2xl font-bold text-brand-400">Lakhs</span>
+                    </div>
+
+                    <!-- Converted auxiliary values -->
+                    <div id="auxiliaryPrice" class="text-sm font-medium text-slate-400 mt-2 flex items-center justify-center space-x-4">
+                        <span id="priceInINR"></span>
+                        <span class="text-slate-600">•</span>
+                        <span id="priceInCrore"></span>
+                    </div>
+
+                    <div id="detailsSummary" class="mt-4 inline-block px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/80 text-xs text-slate-300">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+        <p>Bengaluru House Price Prediction • Built with Flask, Scikit-Learn & Tailwind CSS</p>
+    </footer>
+
+    <!-- Frontend Script -->
+    <script>
+        // Location filter functionality
+        function filterLocations() {
+            const searchInput = document.getElementById('locationSearch').value.toLowerCase().trim();
+            const select = document.getElementById('location');
+            const options = select.options;
+
+            for (let i = 1; i < options.length; i++) {
+                const text = options[i].text.toLowerCase();
+                if (text.includes(searchInput)) {
+                    options[i].style.display = "";
+                } else {
+                    options[i].style.display = "none";
+                }
+            }
+        }
+
+        // Apply preset options easily
+        function applyPreset(location, sqft, bhk, bath) {
+            const select = document.getElementById('location');
+            select.value = location;
+            document.getElementById('total_sqft').value = sqft;
+            document.getElementById('bhk').value = bhk;
+            document.getElementById('bath').value = bath;
+            document.getElementById('locationSearch').value = '';
+            filterLocations();
+            hideError();
+        }
+
+        function showError(msg) {
+            const alertBox = document.getElementById('errorAlert');
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.innerText = msg;
+            alertBox.classList.remove('hidden');
+        }
+
+        function hideError() {
+            const alertBox = document.getElementById('errorAlert');
+            alertBox.classList.add('hidden');
+        }
+
+        async function handlePredict(e) {
+            e.preventDefault();
+            hideError();
+
+            const location = document.getElementById('location').value;
+            const total_sqft = parseFloat(document.getElementById('total_sqft').value);
+            const bhk = parseInt(document.getElementById('bhk').value, 10);
+            const bath = parseFloat(document.getElementById('bath').value);
+
+            // Client-side validation
+            if (!location) {
+                showError("Please select a location from the dropdown.");
+                return;
+            }
+            if (isNaN(total_sqft) || total_sqft <= 0) {
+                showError("Please enter a valid total square feet greater than 0.");
+                return;
+            }
+            if (isNaN(bhk) || bhk <= 0) {
+                showError("Please enter a valid number of bedrooms (BHK) greater than 0.");
+                return;
+            }
+            if (isNaN(bath) || bath <= 0) {
+                showError("Please enter a valid number of bathrooms greater than 0.");
+                return;
+            }
+
+            // UI Loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const resultCard = document.getElementById('resultCard');
+
+            submitBtn.disabled = true;
+            btnText.innerText = "Estimating Price...";
+            btnSpinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        location: location,
+                        total_sqft: total_sqft,
+                        bhk: bhk,
+                        bath: bath
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const lakhs = parseFloat(data.prediction);
+                    const formattedLakhs = lakhs.toFixed(2);
+                    
+                    document.getElementById('predictedPrice').innerText = formattedLakhs;
+                    
+                    // Format in INR currency format
+                    const totalRupees = lakhs * 100000;
+                    document.getElementById('priceInINR').innerText = `Approx. ₹ ${totalRupees.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+                    
+                    if (lakhs >= 100) {
+                        const crores = (lakhs / 100).toFixed(2);
+                        document.getElementById('priceInCrore').innerText = `₹ ${crores} Cr`;
+                        document.getElementById('priceInCrore').classList.remove('hidden');
+                    } else {
+                        document.getElementById('priceInCrore').classList.add('hidden');
+                    }
+
+                    document.getElementById('detailsSummary').innerText = `${bhk} BHK • ${bath} Baths • ${total_sqft} sq ft in ${location}`;
+                    
+                    resultCard.classList.remove('hidden');
+                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    showError(data.error || "Failed to calculate prediction. Please try again.");
+                }
+
+            } catch (err) {
+                showError("Network error: Could not reach backend server. " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                btnText.innerText = "Predict Property Price";
+                btnSpinner.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
